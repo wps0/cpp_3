@@ -1,0 +1,5 @@
+*.o
+*.exe
+*.err
+crosswords_example.cc
+.vscode
