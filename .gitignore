@@ -286,12 +286,7 @@ tags
 [._]*.un~
 
 ### VisualStudioCode ###
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/*.code-snippets
+.vscode
 
 # Local History for Visual Studio Code
 .history/
@@ -333,8 +328,8 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/c,c++,linux,vim,clion,kate,windows,visualstudiocode,clion+all
 
 .gdb_history
-poset_test[1-9]
 test.cpp
 CMakeLists.txt
 
-Testy
+*.err
+crosswords_example.cc
