@@ -20,9 +20,9 @@ Word::Word(const Word& word):
 	orientation(word.orientation),
 	content(word.content) {}
 Word::Word(Word&& word):
-	wordStart(word.wordStart),
-	orientation(word.orientation),
-	content(word.content) {}
+	wordStart(std::move(word.wordStart)),
+	orientation(std::move(word.orientation)),
+	content(std::move(word.content)) {}
 Word& Word::operator=(const Word& word) {
 	wordStart = word.wordStart;
 	orientation = word.orientation;
@@ -30,9 +30,9 @@ Word& Word::operator=(const Word& word) {
 	return *this;
 }
 Word& Word::operator=(Word&& word) {
-	wordStart = word.wordStart;
-	orientation = word.orientation;
-	content = word.content;
+	wordStart = std::move(word.wordStart);
+	orientation = std::move(word.orientation);
+	content = std::move(word.content);
 	return *this;
 }
 pos_t Word::get_start_position() const {
@@ -106,16 +106,16 @@ RectArea::RectArea(const RectArea& rectArea):
 	leftUpper(rectArea.leftUpper),
 	rightBottom(rectArea.rightBottom) {}
 RectArea::RectArea(RectArea&& rectArea):
-	leftUpper(rectArea.leftUpper),
-	rightBottom(rectArea.rightBottom) {}
+	leftUpper(std::move(rectArea.leftUpper)),
+	rightBottom(std::move(rectArea.rightBottom)) {}
 RectArea& RectArea::operator=(const RectArea& rectArea) {
 	leftUpper = rectArea.leftUpper;
 	rightBottom = rectArea.rightBottom;
 	return *this;
 }
 RectArea& RectArea::operator=(RectArea&& rectArea) {
-	leftUpper = rectArea.leftUpper;
-	rightBottom = rectArea.rightBottom;
+	leftUpper = std::move(rectArea.leftUpper);
+	rightBottom = std::move(rectArea.rightBottom);
 	return *this;
 }
 pos_t RectArea::get_left_top() const {
@@ -145,9 +145,7 @@ void RectArea::set_right_top(pos_t point) {
 	leftUpper.second = point.second;
 }
 const RectArea RectArea::operator*(const RectArea& rectArea) const {
-	RectArea result(*this);
-	result *= rectArea;
-	return result;
+	return RectArea(*this) *= rectArea;
 }
 RectArea& RectArea::operator*=(const RectArea& rectArea) {
 	if (empty()) {
