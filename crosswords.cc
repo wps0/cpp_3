@@ -206,6 +206,12 @@ bool RectArea::empty() const {
 void RectArea::embrace(pos_t point) {
 	if (pointInRect(point)) return;
 
+	if (empty()) {
+		leftUpper = point;
+		rightBottom = point;
+		return;
+	}
+
 	if (point.first < leftUpper.first) {
 		leftUpper.first = point.first;
 	} else if (point.first > rightBottom.first) {
