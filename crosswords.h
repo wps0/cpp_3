@@ -17,22 +17,30 @@ constexpr char CROSSWORD_BACKGROUND = '.';
 
 class RectArea;
 
+extern const RectArea DEFAULT_EMPTY_RECT_AREA;
+
 class Word {
 	private:
 		pos_t wordStart;
 		orientation_t orientation;
 		std::string content;
 	public:
-		Word(size_t x, size_t y, orientation_t wordOrientation, std::string wordContent);
+		Word(size_t x, size_t y, orientation_t wordOrientation, std::string&& wordContent);
 		Word(const Word& word);
 		Word(Word&& word);
 		Word& operator=(const Word& word);
 		Word& operator=(Word&& word);
-		pos_t get_start_position() const;
+		inline pos_t get_start_position() const {
+			return wordStart;
+		}
 		pos_t get_end_position() const;
-		orientation_t get_orientation() const;
+		inline orientation_t get_orientation() const {
+			return orientation;
+		}
 		char at(size_t pos) const;
-		size_t length() const;
+		inline size_t length() const {
+			return content.size();
+		}
 		std::weak_ordering operator<=>(const Word& word) const;
 		bool operator==(const Word& word) const;
 		bool operator!=(const Word& word) const;
@@ -51,21 +59,41 @@ class RectArea {
 		RectArea(RectArea&& rectArea);
 		RectArea& operator=(const RectArea& rectArea);
 		RectArea& operator=(RectArea&& rectArea);
-		pos_t get_left_top() const;
-		pos_t get_right_bottom() const;
-		pos_t get_left_bottom() const;
-		pos_t get_right_top() const;
-		void set_left_top(pos_t point);
-		void set_right_bottom(pos_t point);
-		void set_left_bottom(pos_t point);
-		void set_right_top(pos_t point);
+		inline pos_t get_left_top() const {
+			return leftUpper;
+		}
+		inline pos_t get_right_bottom() const {
+			return rightBottom;
+		}
+		inline pos_t get_left_bottom() const {
+			return {leftUpper.first, rightBottom.second};
+		}
+		inline pos_t get_right_top() const {
+			return {rightBottom.first, leftUpper.second};
+		}
+		inline void set_left_top(pos_t point) {
+			leftUpper = point;
+		}
+		inline void set_right_bottom(pos_t point) {
+			rightBottom = point;
+		}
+		inline void set_left_bottom(pos_t point) {
+			leftUpper.first = point.first;
+			rightBottom.second = point.second;
+		}
+		inline void set_right_top(pos_t point) {
+			rightBottom.first = point.first;
+			leftUpper.second = point.second;
+		}
 		const RectArea operator*(const RectArea& rectArea) const;
 		RectArea& operator*=(const RectArea& rectArea);
 		dim_t size() const;
-		bool empty() const;
+		inline bool empty() const {
+			return
+			leftUpper.first > rightBottom.first ||
+			leftUpper.second > rightBottom.second;
+		}
 		void embrace(pos_t point);
 };
-
-const RectArea DEFAULT_EMPTY_RECT_AREA = RectArea({1, 1}, {0, 0});
 
 #endif

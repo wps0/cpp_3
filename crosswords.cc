@@ -3,7 +3,9 @@
 #include <compare>
 #include "crosswords.h"
 
-Word::Word(size_t x, size_t y, orientation_t wordOrientation, std::string wordContent) :
+const RectArea DEFAULT_EMPTY_RECT_AREA = RectArea({1, 1}, {0, 0});
+
+Word::Word(size_t x, size_t y, orientation_t wordOrientation, std::string&& wordContent) :
 	wordStart({x, y}), orientation(wordOrientation), content(wordContent) {
 		if (content.empty()) {
 			content = DEFAULT_WORD;
@@ -35,9 +37,6 @@ Word& Word::operator=(Word&& word) {
 	content = std::move(word.content);
 	return *this;
 }
-pos_t Word::get_start_position() const {
-	return wordStart;
-}
 pos_t Word::get_end_position() const {
 	size_t length = content.size() - 1;
 	if (orientation == H) {
@@ -46,15 +45,9 @@ pos_t Word::get_end_position() const {
 		return {wordStart.first, wordStart.second + length};
 	}
 }
-orientation_t Word::get_orientation() const {
-	return orientation;
-}
 char Word::at(size_t pos) const {
 	if (pos >= content.size()) return DEFAULT_CHAR;
 	return content[pos];
-}
-size_t Word::length() const {
-	return content.size();
 }
 std::weak_ordering Word::operator<=>(const Word& word) const {
 	if (wordStart.first == word.wordStart.first) {
@@ -80,8 +73,7 @@ bool Word::operator!=(const Word& word) const {
 	return !(*this == word);
 }
 RectArea Word::rect_area() const {
-	RectArea ra(get_start_position(), get_end_position());
-	return ra;
+	return RectArea(get_start_position(), get_end_position());
 }
 
 
@@ -117,32 +109,6 @@ RectArea& RectArea::operator=(RectArea&& rectArea) {
 	leftUpper = std::move(rectArea.leftUpper);
 	rightBottom = std::move(rectArea.rightBottom);
 	return *this;
-}
-pos_t RectArea::get_left_top() const {
-	return leftUpper;
-}
-pos_t RectArea::get_right_bottom() const {
-	return rightBottom;
-}
-pos_t RectArea::get_left_bottom() const {
-	return {leftUpper.first, rightBottom.second};
-}
-pos_t RectArea::get_right_top() const {
-	return {rightBottom.first, leftUpper.second};
-}
-void RectArea::set_left_top(pos_t point) {
-	leftUpper = point;
-}
-void RectArea::set_right_bottom(pos_t point) {
-	rightBottom = point;
-}
-void RectArea::set_left_bottom(pos_t point) {
-	leftUpper.first = point.first;
-	rightBottom.second = point.second;
-}
-void RectArea::set_right_top(pos_t point) {
-	rightBottom.first = point.first;
-	leftUpper.second = point.second;
 }
 const RectArea RectArea::operator*(const RectArea& rectArea) const {
 	return RectArea(*this) *= rectArea;
@@ -197,11 +163,6 @@ dim_t RectArea::size() const {
 	size_t width = get_right_top().first - get_left_top().first + 1;
 	size_t height = get_left_bottom().second - get_left_top().second + 1;
 	return {width, height};
-}
-bool RectArea::empty() const {
-	return
-		leftUpper.first > rightBottom.first ||
-		leftUpper.second > rightBottom.second;
 }
 void RectArea::embrace(pos_t point) {
 	if (pointInRect(point)) return;
