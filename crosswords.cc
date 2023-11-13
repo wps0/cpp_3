@@ -1,6 +1,7 @@
 #include <iostream>
 #include <algorithm>
 #include <compare>
+#include <vector>
 #include "crosswords.h"
 
 const RectArea DEFAULT_EMPTY_RECT_AREA = RectArea({1, 1}, {0, 0});
@@ -38,12 +39,7 @@ Word& Word::operator=(Word&& word) {
 	return *this;
 }
 pos_t Word::get_end_position() const {
-	size_t length = content.size() - 1;
-	if (orientation == H) {
-		return {wordStart.first + length, wordStart.second};
-	} else {
-		return {wordStart.first, wordStart.second + length};
-	}
+    return pos_of_letter(content.size() - 1);
 }
 char Word::at(size_t pos) const {
 	if (pos >= content.size()) return DEFAULT_CHAR;
@@ -74,6 +70,22 @@ bool Word::operator!=(const Word& word) const {
 }
 RectArea Word::rect_area() const {
 	return RectArea(get_start_position(), get_end_position());
+}
+std::optional<char> Word::at(pos_t pos) const {
+    if (wordStart <= pos && pos <= get_end_position()) {
+        size_t offset = orientation == H ? wordStart.first - pos.first
+                : wordStart.second - pos.second;
+        return content[offset];
+    }
+
+    return {};
+}
+pos_t Word::pos_of_letter(size_t offset) const {
+    if (orientation == H) {
+        return {wordStart.first + offset, wordStart.second};
+    } else {
+        return {wordStart.first, wordStart.second + offset};
+    }
 }
 
 
@@ -184,4 +196,79 @@ void RectArea::embrace(pos_t point) {
 	} else if (point.second > rightBottom.second) {
 		rightBottom.second = point.second;
 	}
+}
+
+bool Crossword::are_colliding(const Word &other) const {
+    return false;
+}
+
+std::optional<char> Crossword::letter_at(pos_t pos) {
+
+    std::optional<char> letter;
+    if (h_it != h_words.end()) {
+        letter = h_it->first.at(pos);
+        if (letter.has_value())
+            return *letter;
+    }
+
+    auto v_it = v_words.upper_bound({Word(pos.first, pos.second, V, ""), 0});
+    if (v_it != v_words.begin())
+        v_it--;
+    if (v_it != v_words.end())
+        letter = v_it->first.at(pos);
+    return letter;
+}
+
+std::optional<Word&> Crossword::closest_word(const Word &to) const {
+    const std::set<hword_t>* word_set = to.get_orientation() == H ? &h_words : &v_words;
+    pos_t start_pos = to.get_start_position();
+    auto it = word_set->upper_bound({Word(start_pos.first, start_pos.second, to.get_orientation(), ""), 0});
+    if (it != h_words.begin())
+        it--;
+    if (it == h_words.end())
+        return std::optional<Word&>();
+}
+
+std::vector<hword_t> Crossword::words() const {
+    std::vector<hword_t> words(h_words.begin(), h_words.end());
+    words.insert(words.end(), v_words.begin(), v_words.end());
+    std::sort(words.begin(), words.end(), [](hword_t const& a, hword_t const& b) {
+        return a.second < b.second;
+    });
+    return words;
+}
+
+Crossword::Crossword(Word const& first, std::initializer_list<Word> other) : h_words(), v_words(), area(DEFAULT_EMPTY_RECT_AREA) {
+    insert_word(first);
+    std::for_each(other.begin(), other.end(), [this](Word const& w){
+        this->insert_word(w);
+    });
+}
+
+bool Crossword::insert_word(const Word& w) {
+    for (size_t i = 0; i < w.length(); i++) {
+        std::optional<char> letter = letter_at(w.pos_of_letter(i));
+        if (letter.has_value() && *letter != w.at(i))
+            return false;
+    }
+
+    if (w.get_orientation() == H)
+        h_words.insert({w, time++});
+    else
+        v_words.insert({w, time++});
+    area.embrace(w.get_start_position());
+    area.embrace(w.get_end_position());
+    return true;
+}
+
+Crossword Crossword::operator+(const Crossword& b) const {
+    Crossword a = *this; // TODO
+    return a += b;
+}
+
+Crossword& Crossword::operator+=(const Crossword& b) {
+    for (hword_t& w : b.words()) { // TODO
+        insert_word(w.first);
+    }
+    return *this;
 }

@@ -3,19 +3,25 @@
 
 #include <iostream>
 #include <compare>
+#include <set>
+#include <optional>
 
 enum orientation_t : bool {
 	H, V
 };
 
-using pos_t = std::pair<size_t, size_t>;
-using dim_t = std::pair<size_t, size_t>;
+class RectArea;
+class Word;
+
+using cord_t = size_t;
+using pos_t = std::pair<cord_t, cord_t>;
+using dim_t = std::pair<cord_t, cord_t>;
+// word with history
+using hword_t = std::pair<Word, size_t>;
 
 constexpr char DEFAULT_CHAR = '?';
 constexpr std::string DEFAULT_WORD = "?";
 constexpr char CROSSWORD_BACKGROUND = '.';
-
-class RectArea;
 
 extern const RectArea DEFAULT_EMPTY_RECT_AREA;
 
@@ -38,6 +44,8 @@ class Word {
 			return orientation;
 		}
 		char at(size_t pos) const;
+        std::optional<char> at(pos_t pos) const;
+        pos_t pos_of_letter(size_t offset) const;
 		inline size_t length() const {
 			return content.size();
 		}
@@ -94,6 +102,32 @@ class RectArea {
 			leftUpper.second > rightBottom.second;
 		}
 		void embrace(pos_t point);
+};
+
+class Crossword {
+private:
+    std::set<hword_t> h_words, v_words;
+    RectArea area;
+    size_t time;
+
+    bool are_colliding(Word const& other) const;
+    std::optional<char> letter_at(pos_t pos);
+    Word& closest_word(Word const& to) const;
+    std::vector<hword_t> words() const;
+
+public:
+    Crossword(Word const& first, std::initializer_list<Word> other);
+
+    inline dim_t size() const {
+        return area.size();
+    }
+    // (H, V)
+    inline dim_t word_count() const {
+        return {h_words.size(), v_words.size()};
+    }
+    bool insert_word(Word const& w);
+    Crossword operator+(const Crossword& b) const;
+    Crossword& operator+=(const Crossword& b);
 };
 
 #endif
