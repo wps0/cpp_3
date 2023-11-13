@@ -202,32 +202,32 @@ bool Crossword::are_colliding(const Word &other) const {
     return false;
 }
 
-std::optional<char> Crossword::letter_at(pos_t pos) {
+//std::optional<char> Crossword::letter_at(pos_t pos) {
+//
+//    std::optional<char> letter;
+//    if (h_it != h_words.end()) {
+//        letter = h_it->first.at(pos);
+//        if (letter.has_value())
+//            return *letter;
+//    }
+//
+//    auto v_it = v_words.upper_bound({Word(pos.first, pos.second, V, ""), 0});
+//    if (v_it != v_words.begin())
+//        v_it--;
+//    if (v_it != v_words.end())
+//        letter = v_it->first.at(pos);
+//    return letter;
+//}
 
-    std::optional<char> letter;
-    if (h_it != h_words.end()) {
-        letter = h_it->first.at(pos);
-        if (letter.has_value())
-            return *letter;
-    }
-
-    auto v_it = v_words.upper_bound({Word(pos.first, pos.second, V, ""), 0});
-    if (v_it != v_words.begin())
-        v_it--;
-    if (v_it != v_words.end())
-        letter = v_it->first.at(pos);
-    return letter;
-}
-
-std::optional<Word&> Crossword::closest_word(const Word &to) const {
-    const std::set<hword_t>* word_set = to.get_orientation() == H ? &h_words : &v_words;
-    pos_t start_pos = to.get_start_position();
-    auto it = word_set->upper_bound({Word(start_pos.first, start_pos.second, to.get_orientation(), ""), 0});
-    if (it != h_words.begin())
-        it--;
-    if (it == h_words.end())
-        return std::optional<Word&>();
-}
+//std::optional<Word&> Crossword::closest_word(const Word &to) const {
+//    const std::set<hword_t>* word_set = to.get_orientation() == H ? &h_words : &v_words;
+//    pos_t start_pos = to.get_start_position();
+//    auto it = word_set->upper_bound({Word(start_pos.first, start_pos.second, to.get_orientation(), ""), 0});
+//    if (it != h_words.begin())
+//        it--;
+//    if (it == h_words.end())
+//        return std::optional<Word&>();
+//}
 
 std::vector<hword_t> Crossword::words() const {
     std::vector<hword_t> words(h_words.begin(), h_words.end());
