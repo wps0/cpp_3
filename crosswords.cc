@@ -170,12 +170,12 @@ RectArea& RectArea::operator*=(const RectArea& rectArea) {
 		set_left_top({1, 1});
 		set_right_bottom({0, 0});
 	}
-
+	
 	return *this;
 }
 dim_t RectArea::size() const {
 	if (empty()) return {0, 0};
-
+	
 	size_t width = get_right_top().first - get_left_top().first + 1;
 	size_t height = get_left_bottom().second - get_left_top().second + 1;
 	return {width, height};
@@ -202,11 +202,11 @@ void RectArea::embrace(pos_t point) {
 	}
 }
 
-bool vertical_cmp::operator()(const std::shared_ptr<Word>& w1, const std::shared_ptr<Word>& w2) const {
+bool vertical_cmp::operator()(Word *w1, Word *w2) const {
     return w1->get_start_position() < w2->get_start_position();
 }
 
-bool horizontal_cmp::operator()(const std::shared_ptr<Word>& w1, const std::shared_ptr<Word>& w2) const {
+bool horizontal_cmp::operator()(Word *w1, Word *w2) const {
     pos_t p1 = w1->get_start_position();
     pos_t p2 = w2->get_start_position();
     std::swap(p1.first, p1.second);
@@ -214,25 +214,15 @@ bool horizontal_cmp::operator()(const std::shared_ptr<Word>& w1, const std::shar
     return p1 < p2;
 }
 
-Crossword::Crossword(Word const& first, std::initializer_list<Word> other) : h_words(),
-                                                                             v_words(), words(),
-                                                                             area(DEFAULT_EMPTY_RECT_AREA) {
+Crossword::Crossword(Word const& first, std::initializer_list<Word> other) : h_words(), v_words(), words(), area(DEFAULT_EMPTY_RECT_AREA) {
     insert_word(first);
     std::for_each(other.begin(), other.end(), [this](Word const& w){
         this->insert_word(w);
     });
 }
-Crossword::Crossword(const Crossword& other) : h_words(), v_words(), words(), area(other.area) {
-    for (const std::shared_ptr<Word>& w : other.words) {
-        if (!does_collide(*w))
-            insert_word_pointer(w);
-    }
-}
-Crossword::Crossword(Crossword&& other) : h_words(std::move(other.h_words)),
-                                          v_words(std::move(other.v_words)),
-                                          words(std::move(other.words)),
-                                          area(std::move(other.area)) {
-    other.words.clear();
+Crossword::~Crossword() {
+    for (Word* w_ptr : words)
+        delete w_ptr;
 }
 bool Crossword::does_collide(const Word &w) const {
     // TODO
@@ -292,7 +282,7 @@ bool Crossword::does_collide(const Word &w) const {
     return false;
 }
 std::optional<char> Crossword::letter_at(pos_t pos) const {
-    auto extract_letter = [](pos_t pos, std::optional<std::shared_ptr<Word>>&& w) {
+    auto extract_letter = [](pos_t pos, std::optional<const Word *>&& w) {
             if (w.has_value()) {
                 std::optional<char> let = w.value()->at(pos);
                 if (let.has_value())
@@ -306,22 +296,22 @@ std::optional<char> Crossword::letter_at(pos_t pos) const {
         return l;
     return extract_letter(pos, closest_word(pos, V));
 }
-std::optional<std::shared_ptr<Word>> Crossword::closest_word(const pos_t &pos, orientation_t ori) const {
+std::optional<const Word*> Crossword::closest_word(const pos_t &pos, orientation_t ori) const {
     if ((ori == H && h_words.empty()) || (ori == V && v_words.empty()))
         return {};
 
-    std::shared_ptr<Word> tmp = std::make_shared<Word>(pos.first, pos.second, ori, "");
+    Word tmp(pos.first, pos.second, ori, "");
     if (ori == H) {
-        const std::set<std::shared_ptr<Word>, horizontal_cmp>* word_set = &h_words;
-        auto it = word_set->upper_bound(tmp);
+        const std::set<Word*, horizontal_cmp>* word_set = &h_words;
+        auto it = word_set->upper_bound(&tmp);
         if (it != word_set->begin())
             it--;
         if (it == word_set->end())
             return {};
         return *it;
     } else {
-        const std::set<std::shared_ptr<Word>, vertical_cmp>* word_set = &v_words;
-        auto it = word_set->upper_bound(tmp);
+        const std::set<Word*, vertical_cmp>* word_set = &v_words;
+        auto it = word_set->upper_bound(&tmp);
         if (it != word_set->begin())
             it--;
         if (it == word_set->end())
@@ -333,29 +323,27 @@ std::optional<std::shared_ptr<Word>> Crossword::closest_word(const pos_t &pos, o
 bool Crossword::insert_word(const Word& w) {
     if (does_collide(w))
         return false;
-    std::shared_ptr<Word> w_ptr = std::make_shared<Word>(w);
+    Word *w_ptr = new Word(w);
     insert_word_pointer(w_ptr);
     return true;
 }
-void Crossword::insert_word_pointer(std::shared_ptr<Word> w) {
+void Crossword::insert_word_pointer(Word *w) {
     words.push_back(w);
     if (w->get_orientation() == H)
-        h_words.insert(std::make_shared<Word>(*w));
+        h_words.insert(w);
     else
-        v_words.insert(std::make_shared<Word>(*w));
+        v_words.insert(w);
 
     area.embrace(w->get_start_position());
     area.embrace(w->get_end_position());
 }
 Crossword Crossword::operator+(const Crossword& b) const {
-    Crossword a = *this;
-    a += b;
-    return a;
+    Crossword a = *this; // TODO
+    return a += b;
 }
 Crossword& Crossword::operator+=(const Crossword& b) {
-    for (const std::shared_ptr<Word>& w : b.words) { // TODO
-        if (!does_collide(*w))
-            insert_word_pointer(w);
+    for (const Word* w : b.words) { // TODO
+        insert_word(*w);
     }
     return *this;
 }
