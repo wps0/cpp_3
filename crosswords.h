@@ -6,6 +6,7 @@
 #include <set>
 #include <vector>
 #include <optional>
+#include <memory>
 
 enum orientation_t : bool {
 	H, V
@@ -109,30 +110,29 @@ class RectArea {
 };
 
 struct vertical_cmp {
-    bool operator()(Word* w1, Word* w2) const;
+    bool operator()(const std::shared_ptr<Word>& w1, const std::shared_ptr<Word>& w2) const;
 };
 
 struct horizontal_cmp {
-    bool operator()(Word* w1, Word* w2) const;
+    bool operator()(const std::shared_ptr<Word>& w1, const std::shared_ptr<Word>& w2) const;
 };
 
 class Crossword {
 private:
-    std::set<Word*, horizontal_cmp> h_words;
-    std::set<Word*, vertical_cmp> v_words;
-    std::vector<Word*> words;
+    std::set<std::shared_ptr<Word>, horizontal_cmp> h_words;
+    std::set<std::shared_ptr<Word>, vertical_cmp> v_words;
+    std::vector<std::shared_ptr<Word>> words;
     RectArea area;
 
     bool does_collide(const Word &w) const;
     std::optional<char> letter_at(pos_t pos) const;
-    std::optional<const Word *> closest_word(const pos_t &pos, orientation_t ori) const;
-    void insert_word_pointer(Word* w);
+    std::optional<std::shared_ptr<Word>> closest_word(const pos_t &pos, orientation_t ori) const;
+    void insert_word_pointer(std::shared_ptr<Word> w);
 
 public:
     Crossword(Word const& first, std::initializer_list<Word> other);
     Crossword(const Crossword& other);
     Crossword(Crossword&& other);
-    ~Crossword();
 
     inline dim_t size() const {
         return area.size();
