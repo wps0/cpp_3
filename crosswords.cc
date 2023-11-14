@@ -5,6 +5,15 @@
 #include <cctype>
 #include "crosswords.h"
 
+#define FIND_CLOSEST_WORD_AND_RETURN(word_set, to) { \
+        auto it = (word_set)->upper_bound(&to); \
+        if (it != (word_set)->begin()) \
+            it--; \
+        if (it == (word_set)->end()) \
+            return {}; \
+        return *it; \
+    }
+
 const RectArea DEFAULT_EMPTY_RECT_AREA = RectArea({1, 1}, {0, 0});
 char CROSSWORD_BACKGROUND = '.';
 
@@ -309,40 +318,26 @@ std::optional<const Word*> Crossword::closest_word(const pos_t &pos, orientation
 
     Word tmp(pos.first, pos.second, ori, "");
     if (ori == H) {
-        const std::set<Word*, horizontal_cmp>* word_set = &h_words;
-        auto it = word_set->upper_bound(&tmp);
-        if (it != word_set->begin())
-            it--;
-        if (it == word_set->end())
-            return {};
-        return *it;
+        FIND_CLOSEST_WORD_AND_RETURN(&h_words, tmp);
     } else {
-        const std::set<Word*, vertical_cmp>* word_set = &v_words;
-        auto it = word_set->upper_bound(&tmp);
-        if (it != word_set->begin())
-            it--;
-        if (it == word_set->end())
-            return {};
-        return *it;
+        FIND_CLOSEST_WORD_AND_RETURN(&v_words, tmp);
     }
 }
 // TODO: czy te slowa kopiowac??
 bool Crossword::insert_word(const Word& w, bool check_collisions) {
     if (check_collisions && does_collide(w))
         return false;
-    Word *w_ptr = new Word(w);
-    insert_word_pointer(w_ptr);
-    return true;
-}
-void Crossword::insert_word_pointer(Word *w) {
-    words.push_back(w);
-    if (w->get_orientation() == H)
-        h_words.insert(w);
-    else
-        v_words.insert(w);
 
-    area.embrace(w->get_start_position());
-    area.embrace(w->get_end_position());
+    Word *w_ptr = new Word(w);
+    words.push_back(w_ptr);
+    if (w_ptr->get_orientation() == H)
+        h_words.insert(w_ptr);
+    else
+        v_words.insert(w_ptr);
+
+    area.embrace(w_ptr->get_start_position());
+    area.embrace(w_ptr->get_end_position());
+    return true;
 }
 void Crossword::delete_words() {
     for (Word* w_ptr : words)
