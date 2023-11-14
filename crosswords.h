@@ -130,6 +130,8 @@ private:
 
 public:
     Crossword(Word const& first, std::initializer_list<Word> other);
+    Crossword(const Crossword& other);
+    Crossword(Crossword&& other);
     ~Crossword();
 
     inline dim_t size() const {

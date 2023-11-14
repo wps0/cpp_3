@@ -170,12 +170,12 @@ RectArea& RectArea::operator*=(const RectArea& rectArea) {
 		set_left_top({1, 1});
 		set_right_bottom({0, 0});
 	}
-	
+
 	return *this;
 }
 dim_t RectArea::size() const {
 	if (empty()) return {0, 0};
-	
+
 	size_t width = get_right_top().first - get_left_top().first + 1;
 	size_t height = get_left_bottom().second - get_left_top().second + 1;
 	return {width, height};
@@ -214,11 +214,21 @@ bool horizontal_cmp::operator()(Word *w1, Word *w2) const {
     return p1 < p2;
 }
 
-Crossword::Crossword(Word const& first, std::initializer_list<Word> other) : h_words(), v_words(), words(), area(DEFAULT_EMPTY_RECT_AREA) {
+Crossword::Crossword(Word const& first, std::initializer_list<Word> other) : h_words(),
+                                                                             v_words(), words(),
+                                                                             area(DEFAULT_EMPTY_RECT_AREA) {
     insert_word(first);
     std::for_each(other.begin(), other.end(), [this](Word const& w){
         this->insert_word(w);
     });
+}
+Crossword::Crossword(const Crossword& other) : h_words(other.h_words), v_words(other.v_words), words(other.words),
+                                               area(other.area) {}
+Crossword::Crossword(Crossword&& other) : h_words(std::move(other.h_words)),
+                                          v_words(std::move(other.v_words)),
+                                          words(std::move(other.words)),
+                                          area(std::move(other.area)) {
+    other.words.clear();
 }
 Crossword::~Crossword() {
     for (Word* w_ptr : words)
@@ -323,7 +333,7 @@ std::optional<const Word*> Crossword::closest_word(const pos_t &pos, orientation
 bool Crossword::insert_word(const Word& w) {
     if (does_collide(w))
         return false;
-    Word *w_ptr = new Word(w);
+    Word* w_ptr = new Word(w);
     insert_word_pointer(w_ptr);
     return true;
 }
@@ -338,8 +348,9 @@ void Crossword::insert_word_pointer(Word *w) {
     area.embrace(w->get_end_position());
 }
 Crossword Crossword::operator+(const Crossword& b) const {
-    Crossword a = *this; // TODO
-    return a += b;
+    Crossword a = *this;
+    a += b;
+    return a;
 }
 Crossword& Crossword::operator+=(const Crossword& b) {
     for (const Word* w : b.words) { // TODO
