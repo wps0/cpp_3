@@ -127,9 +127,12 @@ private:
     std::optional<char> letter_at(pos_t pos) const;
     std::optional<const Word *> closest_word(const pos_t &pos, orientation_t ori) const;
     void insert_word_pointer(Word* w);
+    void delete_words();
 
 public:
     Crossword(Word const& first, std::initializer_list<Word> other);
+    Crossword(const Crossword& other);
+    Crossword(Crossword&& other);
     ~Crossword();
 
     inline dim_t size() const {
@@ -138,10 +141,12 @@ public:
     inline dim_t word_count() const {
         return {h_words.size(), v_words.size()};
     }
-    bool insert_word(Word const& w);
+    bool insert_word(Word const& w, bool check_collisions = true);
+
+    Crossword& operator=(const Crossword&);
+    Crossword& operator=(Crossword&&);
     Crossword operator+(const Crossword& b) const;
     Crossword& operator+=(const Crossword& b);
-
     friend std::ostream &operator<<(std::ostream &os, const Crossword &crossword);
 };
 
