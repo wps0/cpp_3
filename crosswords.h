@@ -4,6 +4,7 @@
 #include <iostream>
 #include <compare>
 #include <set>
+#include <vector>
 #include <optional>
 
 enum orientation_t : bool {
@@ -11,17 +12,15 @@ enum orientation_t : bool {
 };
 
 class RectArea;
-class Word;
 
 using cord_t = size_t;
 using pos_t = std::pair<cord_t, cord_t>;
 using dim_t = std::pair<cord_t, cord_t>;
-// word with history
-using hword_t = std::pair<Word, size_t>;
 
+constexpr cord_t MAX_COORDINATE = (cord_t) - 1;
 constexpr char DEFAULT_CHAR = '?';
 constexpr std::string DEFAULT_WORD = "?";
-constexpr char CROSSWORD_BACKGROUND = '.';
+extern char CROSSWORD_BACKGROUND;
 
 extern const RectArea DEFAULT_EMPTY_RECT_AREA;
 
@@ -53,6 +52,11 @@ class Word {
 		bool operator==(const Word& word) const;
 		bool operator!=(const Word& word) const;
 		RectArea rect_area() const;
+
+        static bool are_letters_the_same(char l1, char l2) {
+            return (!isalpha(l1) && !isalpha(l2))
+                || (isalpha(l1) && isalpha(l2) && l1 == l2);
+        }
 };
 
 class RectArea {
@@ -104,30 +108,37 @@ class RectArea {
 		void embrace(pos_t point);
 };
 
+struct vertical_cmp {
+    bool operator()(Word* w1, Word* w2) const;
+};
+
 class Crossword {
 private:
-    std::set<hword_t> h_words, v_words;
+    std::set<Word*> h_words;
+    std::set<Word*, vertical_cmp> v_words;
+    std::vector<Word*> words;
     RectArea area;
-    size_t time;
 
-    bool are_colliding(Word const& other) const;
-    std::optional<char> letter_at(pos_t pos);
-    Word& closest_word(Word const& to) const;
-    std::vector<hword_t> words() const;
+    bool does_collide(const Word &w) const;
+    std::optional<char> letter_at(pos_t pos) const;
+    std::optional<const Word *> closest_word(const pos_t &pos, orientation_t ori) const;
+    bool insert_word_pointer(Word* w);
 
 public:
     Crossword(Word const& first, std::initializer_list<Word> other);
+    ~Crossword();
 
     inline dim_t size() const {
         return area.size();
     }
-    // (H, V)
     inline dim_t word_count() const {
         return {h_words.size(), v_words.size()};
     }
     bool insert_word(Word const& w);
     Crossword operator+(const Crossword& b) const;
     Crossword& operator+=(const Crossword& b);
+
+    friend std::ostream &operator<<(std::ostream &os, const Crossword &crossword);
 };
 
 #endif

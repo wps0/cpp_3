@@ -333,3 +333,4 @@ CMakeLists.txt
 
 *.err
 crosswords_example.cc
+crosswords_example
