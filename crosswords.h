@@ -112,9 +112,13 @@ struct vertical_cmp {
     bool operator()(Word* w1, Word* w2) const;
 };
 
+struct horizontal_cmp {
+    bool operator()(Word* w1, Word* w2) const;
+};
+
 class Crossword {
 private:
-    std::set<Word*> h_words;
+    std::set<Word*, horizontal_cmp> h_words;
     std::set<Word*, vertical_cmp> v_words;
     std::vector<Word*> words;
     RectArea area;

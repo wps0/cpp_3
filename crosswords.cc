@@ -203,6 +203,10 @@ void RectArea::embrace(pos_t point) {
 }
 
 bool vertical_cmp::operator()(Word *w1, Word *w2) const {
+    return w1->get_start_position() < w2->get_start_position();
+}
+
+bool horizontal_cmp::operator()(Word *w1, Word *w2) const {
     pos_t p1 = w1->get_start_position();
     pos_t p2 = w2->get_start_position();
     std::swap(p1.first, p1.second);
@@ -298,7 +302,7 @@ std::optional<const Word*> Crossword::closest_word(const pos_t &pos, orientation
 
     Word tmp(pos.first, pos.second, ori, "");
     if (ori == H) {
-        const std::set<Word*>* word_set = &h_words;
+        const std::set<Word*, horizontal_cmp>* word_set = &h_words;
         auto it = word_set->upper_bound(&tmp);
         if (it != word_set->begin())
             it--;
@@ -353,7 +357,7 @@ std::ostream &operator<<(std::ostream &os, const Crossword &crossword) {
         while (cur.first <= rb.first) {
             std::optional<char> letter = crossword.letter_at(cur);
             if (letter.has_value()) {
-                os << isalpha(letter.value()) ? letter.value() : DEFAULT_CHAR;
+                os << (isalpha(letter.value()) ? letter.value() : DEFAULT_CHAR);
             } else {
                 os << CROSSWORD_BACKGROUND;
             }
