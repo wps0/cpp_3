@@ -122,7 +122,7 @@ private:
     bool does_collide(const Word &w) const;
     std::optional<char> letter_at(pos_t pos) const;
     std::optional<const Word *> closest_word(const pos_t &pos, orientation_t ori) const;
-    bool insert_word_pointer(Word* w);
+    void insert_word_pointer(Word* w);
 
 public:
     Crossword(Word const& first, std::initializer_list<Word> other);

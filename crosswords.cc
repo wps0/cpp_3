@@ -75,9 +75,11 @@ RectArea Word::rect_area() const {
 }
 std::optional<char> Word::at(pos_t pos) const {
     if (wordStart <= pos && pos <= get_end_position()) {
-        size_t offset = orientation == H ? wordStart.first - pos.first
-                : wordStart.second - pos.second;
-        return content[offset];
+        if (orientation == H && pos.second == wordStart.second) {
+            return content[pos.first - wordStart.first];
+        } else if (orientation == V && pos.first == wordStart.first) {
+            return content[pos.second - wordStart.second];
+        }
     }
 
     return {};
@@ -219,20 +221,6 @@ Crossword::~Crossword() {
         delete w_ptr;
 }
 bool Crossword::does_collide(const Word &w) const {
-    pos_t start = w.get_start_position();
-    if (start.first > 0) {
-        start.first--;
-        if (letter_at(start).has_value())
-            return true;
-    }
-
-    pos_t end = w.get_end_position();
-    if (end.first < MAX_COORDINATE) {
-        end.first++;
-        if (letter_at(end).has_value())
-            return true;
-    }
-
     // TODO
     for (size_t i = 0; i < w.length(); i++) {
         pos_t pos = w.pos_of_letter(i);
@@ -241,19 +229,50 @@ bool Crossword::does_collide(const Word &w) const {
         if (letter.has_value() && !Word::are_letters_the_same(*letter, w.at(i))) {
             return true;
         } else if (!letter.has_value()) {
-
-            if (pos.second > 0) {
+            if (w.get_orientation() == H && pos.second > 0) {
                 pos.second--;
                 if (letter_at(pos).has_value())
                     return true;
                 pos.second++;
+            } else if (w.get_orientation() == V && pos.first > 0) {
+                pos.first--;
+                if (letter_at(pos).has_value())
+                    return true;
+                pos.first++;
             }
-            if (pos.second < MAX_COORDINATE) {
+
+            if (w.get_orientation() == H && pos.second < MAX_COORDINATE) {
                 pos.second++;
+                if (letter_at(pos).has_value())
+                    return true;
+            } else if (w.get_orientation() == V && pos.first < MAX_COORDINATE) {
+                pos.first++;
                 if (letter_at(pos).has_value())
                     return true;
             }
         }
+    }
+
+    pos_t start = w.get_start_position();
+    if (w.get_orientation() == H && start.first > 0) {
+        start.first--;
+        if (letter_at(start).has_value())
+            return true;
+    } else if (w.get_orientation() == V && start.second > 0) {
+        start.second--;
+        if (letter_at(start).has_value())
+            return true;
+    }
+
+    pos_t end = w.get_end_position();
+    if (w.get_orientation() == H && end.first < MAX_COORDINATE) {
+        end.first++;
+        if (letter_at(end).has_value())
+            return true;
+    } else if (w.get_orientation() == V && end.second < MAX_COORDINATE) {
+        end.second++;
+        if (letter_at(end).has_value())
+            return true;
     }
 
     return false;
@@ -302,8 +321,9 @@ bool Crossword::insert_word(const Word& w) {
         return false;
     Word *w_ptr = new Word(w);
     insert_word_pointer(w_ptr);
+    return true;
 }
-bool Crossword::insert_word_pointer(Word *w) {
+void Crossword::insert_word_pointer(Word *w) {
     words.push_back(w);
     if (w->get_orientation() == H)
         h_words.insert(w);
@@ -312,7 +332,6 @@ bool Crossword::insert_word_pointer(Word *w) {
 
     area.embrace(w->get_start_position());
     area.embrace(w->get_end_position());
-    return false;
 }
 Crossword Crossword::operator+(const Crossword& b) const {
     Crossword a = *this; // TODO
