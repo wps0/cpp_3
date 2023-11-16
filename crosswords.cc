@@ -404,7 +404,7 @@ std::ostream &operator<<(std::ostream &os, const Crossword &crossword) {
 	auto print_empty_line = [&lt, &rb, &os]() {
 		for (cord_t i = lt.first; i <= rb.first; i++)
 			os << CROSSWORD_BACKGROUND << ' ';
-		os << CROSSWORD_BACKGROUND << ' ' << CROSSWORD_BACKGROUND << std::endl;
+		os << CROSSWORD_BACKGROUND << ' ' << CROSSWORD_BACKGROUND << '\n';
 	};
 
 	print_empty_line();
@@ -423,7 +423,7 @@ std::ostream &operator<<(std::ostream &os, const Crossword &crossword) {
 
 			cur.first++;
 		}
-		os << CROSSWORD_BACKGROUND << std::endl;
+		os << CROSSWORD_BACKGROUND << '\n';
 	}
 	print_empty_line();
 

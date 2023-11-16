@@ -29,6 +29,9 @@ class Word {
 		pos_t wordStart;
 		orientation_t orientation;
 		std::string content;
+
+		std::optional<char> at(pos_t pos) const;
+		pos_t pos_of_letter(size_t offset) const;
 	public:
 		Word(size_t x, size_t y, orientation_t wordOrientation, std::string&& wordContent);
 		Word(const Word& word);
@@ -43,8 +46,6 @@ class Word {
 			return orientation;
 		}
 		char at(size_t pos) const;
-        std::optional<char> at(pos_t pos) const;
-        pos_t pos_of_letter(size_t offset) const;
 		inline size_t length() const {
 			return content.size();
 		}
@@ -53,16 +54,19 @@ class Word {
 		bool operator!=(const Word& word) const;
 		RectArea rect_area() const;
 
-        static bool are_letters_the_same(char l1, char l2) {
-            return (!isalpha(l1) && !isalpha(l2))
-                || (isalpha(l1) && isalpha(l2) && l1 == l2);
-        }
+		static bool are_letters_the_same(char l1, char l2) {
+			return (!isalpha(l1) && !isalpha(l2))
+				|| (isalpha(l1) && isalpha(l2) && l1 == l2);
+		}
+
+		friend class Crossword;
 };
 
 class RectArea {
 	private:
 		pos_t leftUpper;
 		pos_t rightBottom;
+		
 		bool pointInRect(pos_t point) const;
 		bool rectInRect(RectArea rectArea) const;
 	public:
@@ -109,44 +113,42 @@ class RectArea {
 };
 
 struct vertical_cmp {
-    bool operator()(Word* w1, Word* w2) const;
+	bool operator()(Word* w1, Word* w2) const;
 };
 
 struct horizontal_cmp {
-    bool operator()(Word* w1, Word* w2) const;
+	bool operator()(Word* w1, Word* w2) const;
 };
 
 class Crossword {
 private:
-    std::set<Word*, horizontal_cmp> h_words;
-    std::set<Word*, vertical_cmp> v_words;
-    std::vector<Word*> words;
-    RectArea area;
+	std::set<Word*, horizontal_cmp> h_words;
+	std::set<Word*, vertical_cmp> v_words;
+	std::vector<Word*> words;
+	RectArea area;
 
-    bool does_collide(const Word &w) const;
-    std::optional<char> letter_at(pos_t pos) const;
-    std::optional<const Word *> closest_word(const pos_t &pos, orientation_t ori) const;
-    void delete_words();
+	bool does_collide(const Word &w) const;
+	std::optional<char> letter_at(pos_t pos) const;
+	std::optional<const Word *> closest_word(const pos_t &pos, orientation_t ori) const;
+	void delete_words();
 
 public:
-    Crossword(Word const& first, std::initializer_list<Word> other);
-    Crossword(const Crossword& other);
-    Crossword(Crossword&& other);
-    ~Crossword();
-
-    inline dim_t size() const {
-        return area.size();
-    }
-    inline dim_t word_count() const {
-        return {h_words.size(), v_words.size()};
-    }
-    bool insert_word(Word const& w, bool check_collisions = true);
-
-    Crossword& operator=(const Crossword&);
-    Crossword& operator=(Crossword&&);
-    Crossword operator+(const Crossword& b) const;
-    Crossword& operator+=(const Crossword& b);
-    friend std::ostream &operator<<(std::ostream &os, const Crossword &crossword);
+	Crossword(Word const& first, std::initializer_list<Word> other);
+	Crossword(const Crossword& other);
+	Crossword(Crossword&& other);
+	~Crossword();
+	inline dim_t size() const {
+		return area.size();
+	}
+	inline dim_t word_count() const {
+		return {h_words.size(), v_words.size()};
+	}
+	bool insert_word(Word const& w, bool check_collisions = true);
+	Crossword& operator=(const Crossword&);
+	Crossword& operator=(Crossword&&);
+	Crossword operator+(const Crossword& b) const;
+	Crossword& operator+=(const Crossword& b);
+	friend std::ostream &operator<<(std::ostream &os, const Crossword &crossword);
 };
 
 #endif
