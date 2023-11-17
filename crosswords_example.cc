@@ -56,6 +56,7 @@ namespace {
         assert(w2 == Word(3, 1, V, "MNEMONIC"));
     }
 
+
     void rect_area_tests() {
         RectArea ra1(pos_t(1, 2), pos_t(10, 7));
         RECT_AREA_BASE_ASSERTS(ra1, pos_t(1, 2), pos_t(10, 7), dim_t(10, 6), false);
@@ -131,4 +132,6 @@ int main() {
     word_tests();
     rect_area_tests();
     crossword_tests();
+
+    return 0;
 }
