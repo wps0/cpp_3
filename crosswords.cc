@@ -343,6 +343,8 @@ void Crossword::delete_words() {
     for (Word* w_ptr : words)
         delete w_ptr;
     words.clear();
+    v_words.clear();
+    h_words.clear();
 }
 Crossword Crossword::operator+(const Crossword& b) const {
     Crossword a = *this;
@@ -405,5 +407,6 @@ Crossword& Crossword::operator=(Crossword&& other) {
     h_words.swap(other.h_words);
     v_words.swap(other.v_words);
     area = other.area;
+    other.area = DEFAULT_EMPTY_RECT_AREA;
     return *this;
 }

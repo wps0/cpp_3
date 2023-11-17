@@ -8,6 +8,10 @@ crosswords: crosswords.cc
 
 crosswords.o: crosswords.cc crosswords.h
 crosswords_example.o: crosswords_example.cc crosswords.h
+crosswords_tests.o: crosswords_tests.cc crosswords.h
+
+crosswords_tests: crosswords.o crosswords_tests.o
+	g++ $(CXXFLAGS) $^ -o $@
 
 crosswords_example: crosswords.o crosswords_example.o
 	g++ $(CXXFLAGS) $^ -o $@
