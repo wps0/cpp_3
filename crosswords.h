@@ -121,34 +121,34 @@ struct horizontal_cmp {
 };
 
 class Crossword {
-private:
-	std::set<Word*, horizontal_cmp> h_words;
-	std::set<Word*, vertical_cmp> v_words;
-	std::vector<Word*> words;
-	RectArea area;
+	private:
+		std::set<Word*, horizontal_cmp> h_words;
+		std::set<Word*, vertical_cmp> v_words;
+		std::vector<Word*> words;
+		RectArea area;
 
-	bool does_collide(const Word &w) const;
-	std::optional<char> letter_at(pos_t pos) const;
-	std::optional<const Word *> closest_word(const pos_t &pos, orientation_t ori) const;
-	void delete_words();
+		bool does_collide(const Word &w) const;
+		std::optional<char> letter_at(pos_t pos) const;
+		std::optional<const Word *> closest_word(const pos_t &pos, orientation_t ori) const;
+		void delete_words();
 
-public:
-	Crossword(Word const& first, std::initializer_list<Word> other);
-	Crossword(const Crossword& other);
-	Crossword(Crossword&& other);
-	~Crossword();
-	inline dim_t size() const {
-		return area.size();
-	}
-	inline dim_t word_count() const {
-		return {h_words.size(), v_words.size()};
-	}
-	bool insert_word(Word const& w, bool check_collisions = true);
-	Crossword& operator=(const Crossword&);
-	Crossword& operator=(Crossword&&);
-	Crossword operator+(const Crossword& b) const;
-	Crossword& operator+=(const Crossword& b);
-	friend std::ostream &operator<<(std::ostream &os, const Crossword &crossword);
+	public:
+		Crossword(Word const& first, std::initializer_list<Word> other);
+		Crossword(const Crossword& other);
+		Crossword(Crossword&& other);
+		~Crossword();
+		inline dim_t size() const {
+			return area.size();
+		}
+		inline dim_t word_count() const {
+			return {h_words.size(), v_words.size()};
+		}
+		bool insert_word(Word const& w, bool check_collisions = true);
+		Crossword& operator=(const Crossword&);
+		Crossword& operator=(Crossword&&);
+		Crossword operator+(const Crossword& b) const;
+		Crossword& operator+=(const Crossword& b);
+		friend std::ostream &operator<<(std::ostream &os, const Crossword &crossword);
 };
 
 #endif
